@@ -10,10 +10,11 @@ using System.Windows.Forms;
 using System.Security.Cryptography;
 using System.IO;
 using Microsoft.Win32;
+using System.Security.Principal;
 
 namespace Locker
 {
-    public partial class Form1 : Form
+    public partial class LockerForm : Form
     {
         // Declare CspParmeters and RsaCryptoServiceProvider
         // objects with global scope of your Form class.
@@ -28,12 +29,15 @@ namespace Locker
 
         // Public key file
         const string PubKeyFile = @"c:\encrypt\rsaPublicKey.txt";
+        const string FullKeyFile = @"c:\encrypt\rsaFullKey.txt";
 
         // Key container name for
         // private/public key value pair.
         const string keyName = "Key01";
 
-        public Form1()
+        private Boolean rightClickState = false;
+        private string rightClickText = "Encrypt/Decrypt Folder";
+        public LockerForm()
         {
             InitializeComponent();
            
@@ -41,7 +45,9 @@ namespace Locker
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
+            RegistryKey _key = Registry.ClassesRoot.OpenSubKey($"Folder\\Shell\\{rightClickText}", false);
+            rightClickState = _key == null ? false : true;
+            rightClickOptionMenuItem.Checked = rightClickState;
         }
 
         private void EncryptFile(FileInfo fInfo)
@@ -302,6 +308,17 @@ namespace Locker
             sw.Close();
         }
 
+        private void savePrivateKey()
+        {
+            // Save the full key created by the RSA
+            // to a file. Caution, persisting the
+            // key to a file is a security risk.
+            Directory.CreateDirectory(EncrFolder);
+            StreamWriter sw = new StreamWriter(FullKeyFile, false);
+            sw.Write(rsa.ToXmlString(true));
+            sw.Close();
+        }
+
         private void ButtonImportPublicKey_Click_1(object sender, EventArgs e)
         {
             StreamReader sr = new StreamReader(PubKeyFile);
@@ -330,22 +347,76 @@ namespace Locker
                 buttonEncryptFile.Text = "Key: " + cspp.KeyContainerName + " - Full Key Pair";
         }
 
-        private void AddContextEntry_Click(object sender, EventArgs e)
+        private void addContextEnrty()
         {
             RegistryKey _key = Registry.ClassesRoot.OpenSubKey("Folder\\Shell", true);
-            RegistryKey newkey = _key.CreateSubKey("Encrypt/Decrypt Folder");
+            RegistryKey newkey = _key.CreateSubKey(rightClickText);
             RegistryKey subNewkey = newkey.CreateSubKey("Command");
             subNewkey.SetValue("", Application.ExecutablePath);
             subNewkey.Close();
-            newkey.Close();
+            newkey.Close(); 
             _key.Close();
         }
 
-        private void RemoveContextEntry_Click(object sender, EventArgs e)
+        private void removeContextEntry()
         {
             RegistryKey _key = Registry.ClassesRoot.OpenSubKey("Folder\\Shell", true);
-            _key.DeleteSubKey("Encrypt/Decrypt Folder");
+            _key.DeleteSubKey($"{rightClickText}\\Command");
+            _key.DeleteSubKey(rightClickText);
             _key.Close();
+        }
+
+        private void UpdateStatus(String text)
+        {
+            if (text != null)
+            {
+                this.statusStrip1.Items[0].Text = text;
+            }
+        }
+        private void AboutApplicationToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("About. Yet to be determined");
+        }
+
+        private void ContributeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("https://github.com/naveenrobo/Locker");
+        }
+
+        public static bool IsAdministrator => new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
+
+        private void RightClickOptionMenuItem_Click(object sender, EventArgs e)
+        {
+            if (IsAdministrator)
+            {
+               try
+                {
+                    if (!rightClickOptionMenuItem.Checked)
+                    {
+                        this.addContextEnrty();
+                        rightClickOptionMenuItem.Checked = true;
+                        this.UpdateStatus("Right Click Option added");
+                    }
+                    else
+                    {
+                        this.removeContextEntry();
+                        rightClickOptionMenuItem.Checked = false;
+                        this.UpdateStatus("Right Click Option removed");
+                    }
+                }catch(Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            }
+            else
+            {
+                MessageBox.Show("You have to run the Locker as Administrator to enable this functionality", "Need Admin Access", MessageBoxButtons.OK);
+            }
+        }
+
+        private void Button1_Click(object sender, EventArgs e)
+        {
+            savePrivateKey();
         }
     }
 }
