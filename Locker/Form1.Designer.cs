@@ -31,16 +31,15 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LockerForm));
             this.buttonEncryptFile = new System.Windows.Forms.Button();
             this.buttonDecryptFile = new System.Windows.Forms.Button();
-            this.buttonCreateAsmKeys = new System.Windows.Forms.Button();
-            this.buttonExportPublicKey = new System.Windows.Forms.Button();
-            this.buttonImportPublicKey = new System.Windows.Forms.Button();
-            this.buttonGetPrivateKey = new System.Windows.Forms.Button();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.openFileDialog2 = new System.Windows.Forms.OpenFileDialog();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.fileSystemWatcher1 = new System.IO.FileSystemWatcher();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.generateNewKeysToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.loadKeyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rightClickOptionMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -48,9 +47,8 @@
             this.contributeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusStrip = new System.Windows.Forms.ToolStripStatusLabel();
-            this.button1 = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
-            this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -58,7 +56,7 @@
             // 
             // buttonEncryptFile
             // 
-            this.buttonEncryptFile.Location = new System.Drawing.Point(104, 32);
+            this.buttonEncryptFile.Location = new System.Drawing.Point(28, 31);
             this.buttonEncryptFile.Name = "buttonEncryptFile";
             this.buttonEncryptFile.Size = new System.Drawing.Size(184, 36);
             this.buttonEncryptFile.TabIndex = 0;
@@ -68,53 +66,13 @@
             // 
             // buttonDecryptFile
             // 
-            this.buttonDecryptFile.Location = new System.Drawing.Point(347, 32);
+            this.buttonDecryptFile.Location = new System.Drawing.Point(248, 31);
             this.buttonDecryptFile.Name = "buttonDecryptFile";
             this.buttonDecryptFile.Size = new System.Drawing.Size(184, 36);
             this.buttonDecryptFile.TabIndex = 1;
             this.buttonDecryptFile.Text = "Decrypt File";
             this.buttonDecryptFile.UseVisualStyleBackColor = true;
             this.buttonDecryptFile.Click += new System.EventHandler(this.ButtonDecryptFile_Click_1);
-            // 
-            // buttonCreateAsmKeys
-            // 
-            this.buttonCreateAsmKeys.Location = new System.Drawing.Point(16, 40);
-            this.buttonCreateAsmKeys.Name = "buttonCreateAsmKeys";
-            this.buttonCreateAsmKeys.Size = new System.Drawing.Size(138, 28);
-            this.buttonCreateAsmKeys.TabIndex = 2;
-            this.buttonCreateAsmKeys.Text = "Create Keys";
-            this.buttonCreateAsmKeys.UseVisualStyleBackColor = true;
-            this.buttonCreateAsmKeys.Click += new System.EventHandler(this.ButtonCreateAsmKeys_Click_1);
-            // 
-            // buttonExportPublicKey
-            // 
-            this.buttonExportPublicKey.Location = new System.Drawing.Point(178, 40);
-            this.buttonExportPublicKey.Name = "buttonExportPublicKey";
-            this.buttonExportPublicKey.Size = new System.Drawing.Size(138, 28);
-            this.buttonExportPublicKey.TabIndex = 3;
-            this.buttonExportPublicKey.Text = "Export Public Key";
-            this.buttonExportPublicKey.UseVisualStyleBackColor = true;
-            this.buttonExportPublicKey.Click += new System.EventHandler(this.ButtonExportPublicKey_Click_1);
-            // 
-            // buttonImportPublicKey
-            // 
-            this.buttonImportPublicKey.Location = new System.Drawing.Point(336, 40);
-            this.buttonImportPublicKey.Name = "buttonImportPublicKey";
-            this.buttonImportPublicKey.Size = new System.Drawing.Size(138, 28);
-            this.buttonImportPublicKey.TabIndex = 4;
-            this.buttonImportPublicKey.Text = "Import Public Key";
-            this.buttonImportPublicKey.UseVisualStyleBackColor = true;
-            this.buttonImportPublicKey.Click += new System.EventHandler(this.ButtonImportPublicKey_Click_1);
-            // 
-            // buttonGetPrivateKey
-            // 
-            this.buttonGetPrivateKey.Location = new System.Drawing.Point(505, 40);
-            this.buttonGetPrivateKey.Name = "buttonGetPrivateKey";
-            this.buttonGetPrivateKey.Size = new System.Drawing.Size(138, 28);
-            this.buttonGetPrivateKey.TabIndex = 5;
-            this.buttonGetPrivateKey.Text = "Get Private Key";
-            this.buttonGetPrivateKey.UseVisualStyleBackColor = true;
-            this.buttonGetPrivateKey.Click += new System.EventHandler(this.ButtonGetPrivateKey_Click_1);
             // 
             // openFileDialog1
             // 
@@ -128,25 +86,12 @@
             // 
             this.groupBox1.Controls.Add(this.buttonEncryptFile);
             this.groupBox1.Controls.Add(this.buttonDecryptFile);
-            this.groupBox1.Location = new System.Drawing.Point(12, 35);
+            this.groupBox1.Location = new System.Drawing.Point(12, 34);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(660, 98);
+            this.groupBox1.Size = new System.Drawing.Size(460, 98);
             this.groupBox1.TabIndex = 8;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Encrypt/Decrypt";
-            // 
-            // groupBox2
-            // 
-            this.groupBox2.Controls.Add(this.buttonCreateAsmKeys);
-            this.groupBox2.Controls.Add(this.buttonExportPublicKey);
-            this.groupBox2.Controls.Add(this.buttonGetPrivateKey);
-            this.groupBox2.Controls.Add(this.buttonImportPublicKey);
-            this.groupBox2.Location = new System.Drawing.Point(13, 140);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(659, 98);
-            this.groupBox2.TabIndex = 9;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Generate and Load Keys";
             // 
             // fileSystemWatcher1
             // 
@@ -155,14 +100,55 @@
             // 
             // menuStrip1
             // 
+            this.menuStrip1.AutoSize = false;
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fileToolStripMenuItem,
             this.optionsToolStripMenuItem,
             this.aboutToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(684, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(484, 24);
             this.menuStrip1.TabIndex = 11;
             this.menuStrip1.Text = "menuStrip1";
+            // 
+            // fileToolStripMenuItem
+            // 
+            this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.generateNewKeysToolStripMenuItem,
+            this.loadKeyToolStripMenuItem,
+            this.exitToolStripMenuItem});
+            this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
+            this.fileToolStripMenuItem.Text = "File";
+            // 
+            // generateNewKeysToolStripMenuItem
+            // 
+            this.generateNewKeysToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("generateNewKeysToolStripMenuItem.Image")));
+            this.generateNewKeysToolStripMenuItem.Name = "generateNewKeysToolStripMenuItem";
+            this.generateNewKeysToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.G)));
+            this.generateNewKeysToolStripMenuItem.Size = new System.Drawing.Size(249, 22);
+            this.generateNewKeysToolStripMenuItem.Text = "Generate New Keys";
+            this.generateNewKeysToolStripMenuItem.Click += new System.EventHandler(this.GenerateNewKeysToolStripMenuItem_Click);
+            // 
+            // loadKeyToolStripMenuItem
+            // 
+            this.loadKeyToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("loadKeyToolStripMenuItem.Image")));
+            this.loadKeyToolStripMenuItem.Name = "loadKeyToolStripMenuItem";
+            this.loadKeyToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.L)));
+            this.loadKeyToolStripMenuItem.Size = new System.Drawing.Size(249, 22);
+            this.loadKeyToolStripMenuItem.Text = "Load Key";
+            this.loadKeyToolStripMenuItem.Click += new System.EventHandler(this.LoadKeyToolStripMenuItem_Click);
+            // 
+            // exitToolStripMenuItem
+            // 
+            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            this.exitToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.E)));
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(249, 22);
+            this.exitToolStripMenuItem.Text = "Exit";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.ExitToolStripMenuItem_Click);
             // 
             // optionsToolStripMenuItem
             // 
@@ -193,14 +179,14 @@
             // aboutApplicationToolStripMenuItem
             // 
             this.aboutApplicationToolStripMenuItem.Name = "aboutApplicationToolStripMenuItem";
-            this.aboutApplicationToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.aboutApplicationToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.aboutApplicationToolStripMenuItem.Text = "About Application";
             this.aboutApplicationToolStripMenuItem.Click += new System.EventHandler(this.AboutApplicationToolStripMenuItem_Click);
             // 
             // contributeToolStripMenuItem
             // 
             this.contributeToolStripMenuItem.Name = "contributeToolStripMenuItem";
-            this.contributeToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.contributeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.contributeToolStripMenuItem.Text = "Contribute";
             this.contributeToolStripMenuItem.Click += new System.EventHandler(this.ContributeToolStripMenuItem_Click);
             // 
@@ -208,46 +194,45 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statusStrip});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 339);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 164);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(684, 22);
+            this.statusStrip1.Size = new System.Drawing.Size(484, 22);
             this.statusStrip1.TabIndex = 12;
             this.statusStrip1.Text = "statusStrip1";
             // 
             // statusStrip
             // 
             this.statusStrip.Name = "statusStrip";
-            this.statusStrip.Size = new System.Drawing.Size(39, 17);
-            this.statusStrip.Text = "Status";
+            this.statusStrip.Size = new System.Drawing.Size(0, 17);
             // 
-            // button1
+            // label1
             // 
-            this.button1.Location = new System.Drawing.Point(382, 276);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 13;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.Button1_Click);
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(9, 135);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(35, 13);
+            this.label1.TabIndex = 13;
+            this.label1.Text = "label1";
             // 
             // LockerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(684, 361);
-            this.Controls.Add(this.button1);
+            this.ClientSize = new System.Drawing.Size(484, 186);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.groupBox1);
-            this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
-            this.MaximumSize = new System.Drawing.Size(700, 400);
+            this.MaximizeBox = false;
+            this.MaximumSize = new System.Drawing.Size(500, 225);
+            this.MinimizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(500, 225);
             this.Name = "LockerForm";
             this.Text = "Locker";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.groupBox1.ResumeLayout(false);
-            this.groupBox2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher1)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
@@ -262,14 +247,9 @@
 
         private System.Windows.Forms.Button buttonEncryptFile;
         private System.Windows.Forms.Button buttonDecryptFile;
-        private System.Windows.Forms.Button buttonCreateAsmKeys;
-        private System.Windows.Forms.Button buttonExportPublicKey;
-        private System.Windows.Forms.Button buttonImportPublicKey;
-        private System.Windows.Forms.Button buttonGetPrivateKey;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.OpenFileDialog openFileDialog2;
         private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.GroupBox groupBox2;
         private System.IO.FileSystemWatcher fileSystemWatcher1;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
@@ -279,7 +259,11 @@
         private System.Windows.Forms.ToolStripMenuItem contributeToolStripMenuItem;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel statusStrip;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem generateNewKeysToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem loadKeyToolStripMenuItem;
+        private System.Windows.Forms.Label label1;
     }
 }
 

@@ -33,10 +33,11 @@ namespace Locker
 
         // Key container name for
         // private/public key value pair.
-        const string keyName = "Key01";
+        const string keyName = "LockerKey";
 
         private Boolean rightClickState = false;
         private string rightClickText = "Encrypt/Decrypt Folder";
+
         public LockerForm()
         {
             InitializeComponent();
@@ -239,19 +240,6 @@ namespace Locker
 
         }
 
-
-        private void ButtonCreateAsmKeys_Click_1(object sender, EventArgs e)
-        {
-            // Stores a key pair in the key container.
-            cspp.KeyContainerName = keyName;
-            rsa = new RSACryptoServiceProvider(cspp);
-            rsa.PersistKeyInCsp = true;
-            if (rsa.PublicOnly == true)
-                buttonEncryptFile.Text = "Key: " + cspp.KeyContainerName + " - Public Only";
-            else
-                buttonEncryptFile.Text = "Key: " + cspp.KeyContainerName + " - Full Key Pair";
-        }
-
         private void ButtonEncryptFile_Click_1(object sender, EventArgs e)
         {
             if (rsa == null)
@@ -295,56 +283,6 @@ namespace Locker
                 }
             }
 
-        }
-
-        private void ButtonExportPublicKey_Click_1(object sender, EventArgs e)
-        {
-            // Save the public key created by the RSA
-            // to a file. Caution, persisting the
-            // key to a file is a security risk.
-            Directory.CreateDirectory(EncrFolder);
-            StreamWriter sw = new StreamWriter(PubKeyFile, false);
-            sw.Write(rsa.ToXmlString(false));
-            sw.Close();
-        }
-
-        private void savePrivateKey()
-        {
-            // Save the full key created by the RSA
-            // to a file. Caution, persisting the
-            // key to a file is a security risk.
-            Directory.CreateDirectory(EncrFolder);
-            StreamWriter sw = new StreamWriter(FullKeyFile, false);
-            sw.Write(rsa.ToXmlString(true));
-            sw.Close();
-        }
-
-        private void ButtonImportPublicKey_Click_1(object sender, EventArgs e)
-        {
-            StreamReader sr = new StreamReader(PubKeyFile);
-            cspp.KeyContainerName = keyName;
-            rsa = new RSACryptoServiceProvider(cspp);
-            string keytxt = sr.ReadToEnd();
-            rsa.FromXmlString(keytxt);
-            rsa.PersistKeyInCsp = true;
-            if (rsa.PublicOnly == true)
-                buttonEncryptFile.Text = "Key: " + cspp.KeyContainerName + " - Public Only";
-            else
-                buttonEncryptFile.Text = "Key: " + cspp.KeyContainerName + " - Full Key Pair";
-            sr.Close();
-        }
-
-        private void ButtonGetPrivateKey_Click_1(object sender, EventArgs e)
-        {
-            cspp.KeyContainerName = keyName;
-
-            rsa = new RSACryptoServiceProvider(cspp);
-            rsa.PersistKeyInCsp = true;
-
-            if (rsa.PublicOnly == true)
-                buttonEncryptFile.Text = "Key: " + cspp.KeyContainerName + " - Public Only";
-            else
-                buttonEncryptFile.Text = "Key: " + cspp.KeyContainerName + " - Full Key Pair";
         }
 
         private void addContextEnrty()
@@ -414,9 +352,72 @@ namespace Locker
             }
         }
 
-        private void Button1_Click(object sender, EventArgs e)
+        private void GenerateNewKeysToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            savePrivateKey();
+            KeysForm keysForm = new KeysForm();
+            keysForm.ShowDialog();
         }
+
+        private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private string loadFile()
+        {
+            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+            openFileDialog1.FileName = "Select a key file";
+            openFileDialog1.Filter = "Text files (*.txt)|*.txt";
+            openFileDialog1.Title = "Load Key file";
+
+            String line = null;
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    var filePath = openFileDialog1.FileName;
+                    using (StreamReader sr = new StreamReader(openFileDialog1.FileName))
+                    {
+                        line = sr.ReadToEnd();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error message: {ex.Message}\n\n" +
+                    $"Details:\n\n{ex.StackTrace}","Error",MessageBoxButtons.OK);
+                }
+            }
+
+            return line;
+        }
+
+        private void LoadKeyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string content = this.loadFile();
+            if(content != null)
+            {
+                try
+                {
+                    cspp.KeyContainerName = keyName;
+                    rsa = new RSACryptoServiceProvider(cspp);
+                    rsa.FromXmlString(content);
+                    rsa.PersistKeyInCsp = true;
+                    if (rsa.PublicOnly == true)
+                        statusStrip.Text = "Key: " + cspp.KeyContainerName + " - Public Only";
+                    else
+                        statusStrip.Text = "Key: " + cspp.KeyContainerName + " - Full Key Pair";
+                }catch(Exception ex)
+                {
+                    MessageBox.Show($"Error message: {ex.Message}\n\n" +
+                    $"Details:\n\n{ex.StackTrace}", "Error", MessageBoxButtons.OK);
+                }
+            }
+            else
+            {
+                statusStrip.Text = "Unable to load the selected file";
+            }
+
+        }
+
     }
 }
