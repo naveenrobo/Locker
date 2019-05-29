@@ -34,6 +34,8 @@
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.openFileDialog2 = new System.Windows.Forms.OpenFileDialog();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.version = new System.Windows.Forms.Label();
             this.richTextBox = new System.Windows.Forms.RichTextBox();
             this.fileSystemWatcher1 = new System.IO.FileSystemWatcher();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
@@ -48,7 +50,8 @@
             this.contributeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusStrip = new System.Windows.Forms.ToolStripStatusLabel();
-            this.version = new System.Windows.Forms.Label();
+            this.backgroundEncrypter = new System.ComponentModel.BackgroundWorker();
+            this.backgroundDecrypter = new System.ComponentModel.BackgroundWorker();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher1)).BeginInit();
             this.menuStrip1.SuspendLayout();
@@ -85,6 +88,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.progressBar1);
             this.groupBox1.Controls.Add(this.version);
             this.groupBox1.Controls.Add(this.buttonEncryptFile);
             this.groupBox1.Controls.Add(this.buttonDecryptFile);
@@ -94,6 +98,22 @@
             this.groupBox1.TabIndex = 8;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Encrypt/Decrypt";
+            // 
+            // progressBar1
+            // 
+            this.progressBar1.Location = new System.Drawing.Point(0, 92);
+            this.progressBar1.Margin = new System.Windows.Forms.Padding(0);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(460, 4);
+            this.progressBar1.TabIndex = 17;
+            // 
+            // version
+            // 
+            this.version.AutoSize = true;
+            this.version.Location = new System.Drawing.Point(419, 82);
+            this.version.Name = "version";
+            this.version.Size = new System.Drawing.Size(0, 13);
+            this.version.TabIndex = 16;
             // 
             // richTextBox
             // 
@@ -215,13 +235,15 @@
             this.statusStrip.Name = "statusStrip";
             this.statusStrip.Size = new System.Drawing.Size(0, 17);
             // 
-            // version
+            // backgroundEncrypter
             // 
-            this.version.AutoSize = true;
-            this.version.Location = new System.Drawing.Point(419, 82);
-            this.version.Name = "version";
-            this.version.Size = new System.Drawing.Size(0, 13);
-            this.version.TabIndex = 16;
+            this.backgroundEncrypter.WorkerReportsProgress = true;
+            this.backgroundEncrypter.WorkerSupportsCancellation = true;
+            // 
+            // backgroundDecrypter
+            // 
+            this.backgroundDecrypter.WorkerReportsProgress = true;
+            this.backgroundDecrypter.WorkerSupportsCancellation = true;
             // 
             // LockerForm
             // 
@@ -241,7 +263,7 @@
             this.MinimumSize = new System.Drawing.Size(500, 250);
             this.Name = "LockerForm";
             this.Text = "Locker";
-            this.Load += new System.EventHandler(this.Form1_Load);
+            this.Load += new System.EventHandler(this.LockerForm_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher1)).EndInit();
@@ -276,6 +298,7 @@
         private System.Windows.Forms.ToolStripMenuItem loadKeyToolStripMenuItem;
         private System.Windows.Forms.RichTextBox richTextBox;
         private System.Windows.Forms.Label version;
+        private System.Windows.Forms.ProgressBar progressBar1;
     }
 }
 

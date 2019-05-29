@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.IO;
 using Microsoft.Win32;
 using System.Security.Principal;
-using System.Threading;
+using System.ComponentModel;
 
 using System.Deployment.Application;
 using System.Reflection;
@@ -14,26 +14,78 @@ namespace Locker
 {
     public partial class LockerForm : Form
     {
-        // Declare CspParmeters and RsaCryptoServiceProvider
-        // objects with global scope of your Form class.
+        // Encryption
         CspParameters cspp = new CspParameters();
         RSACryptoServiceProvider rsa;
 
-        // Key container name for
-        // private/public key value pair.
+        // Key
         const string keyName = "LockerKey";
 
-        private Boolean rightClickState = false;
-        private string rightClickText = "Encrypt/Decrypt Folder";
-        private string SelectedFileLocation = null;
+        // Features
+        const string rightClickText = "Encrypt/Decrypt Folder";
+        string SelectedFileLocation = null;
+        Boolean rightClickState = false;
+
+        // Thread
+        private BackgroundWorker backgroundEncrypter;
+        private BackgroundWorker backgroundDecrypter;
+        private int highestPercentageReached = 0;
+
 
         public LockerForm()
         {
             InitializeComponent();
-           
+            InitializeBackgroundWorker(); 
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        public void InitializeBackgroundWorker()
+        {
+            // Encrypter
+            backgroundEncrypter.DoWork += new DoWorkEventHandler(background_DoEncrypt);
+            backgroundEncrypter.RunWorkerCompleted += new RunWorkerCompletedEventHandler(backgroundWorker_RunWorkerCompleted);
+            backgroundEncrypter.ProgressChanged += new ProgressChangedEventHandler(backgroundWorker_ProgressChanged);
+
+            // Decrypter
+            backgroundDecrypter.DoWork += new DoWorkEventHandler(background_DoDecrypt);
+            backgroundDecrypter.RunWorkerCompleted += new RunWorkerCompletedEventHandler(backgroundWorker_RunWorkerCompleted);
+            backgroundDecrypter.ProgressChanged += new ProgressChangedEventHandler(backgroundWorker_ProgressChanged);
+        }
+
+        private void background_DoEncrypt(object sender, DoWorkEventArgs e)
+        {
+            BackgroundWorker worker = sender as BackgroundWorker;
+            e.Result = EncryptFile((FileInfo)e.Argument, worker, e);
+        }
+
+        private void background_DoDecrypt(object sender, DoWorkEventArgs e)
+        {
+            BackgroundWorker worker = sender as BackgroundWorker;
+            e.Result = DecryptFile((FileInfo)e.Argument, worker, e);
+        }
+
+        private void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (e.Error != null)
+            {
+                UpdateStatus(e.Error.Message);
+            }
+            else if (e.Cancelled)
+            {
+                UpdateStatus("Canceled");
+            }
+            else
+            {
+                UpdateStatus(e.Result.ToString());
+            }
+            EnableButtons(true);
+        }
+
+        private void backgroundWorker_ProgressChanged(object sender,ProgressChangedEventArgs e)
+        {
+            this.progressBar1.Value = e.ProgressPercentage;
+        }
+
+        private void LockerForm_Load(object sender, EventArgs e)
         {
             version.Text = CurrentVersion;
             RegistryKey _key = Registry.ClassesRoot.OpenSubKey($@"Unknown\shell\{rightClickText}", false);
@@ -42,20 +94,19 @@ namespace Locker
             string[] args = Environment.GetCommandLineArgs();
             try
             {
-                if(File.Exists(args[1]))
+                if (args.Length > 1 && File.Exists(args[1]))
                 {
                     SelectedFileLocation = args[1];
                     richTextBox.Text = "Selected File " + SelectedFileLocation;
                 }
-                
-                
-                
             }
-            catch(Exception)
-            {}
+            catch(Exception ex)
+            {
+                MessageBox.Show("Unable to Load the file\n\n"+ex.Message,"Error",MessageBoxButtons.OK);
+            }
         }
 
-        private void EncryptFile(FileInfo fInfo)
+        private string EncryptFile(FileInfo fInfo, BackgroundWorker worker, DoWorkEventArgs e)
         {
             string inFile = fInfo.FullName;
             // Create instance of Rijndael for
@@ -97,7 +148,6 @@ namespace Locker
 
             using (FileStream outFs = new FileStream(outFile, FileMode.Create))
             {
-
                 outFs.Write(LenK, 0, 4);
                 outFs.Write(LenIV, 0, 4);
                 outFs.Write(keyEncrypted, 0, lKey);
@@ -113,7 +163,8 @@ namespace Locker
                     // and accommodate large files.
                     int count = 0;
                     int offset = 0;
-
+                    long totalBlocks = fInfo.Length;
+                    highestPercentageReached = 0;
 
                     // blockSizeBytes can be any arbitrary size.
                     int blockSizeBytes = rjndl.BlockSize / 8;
@@ -129,7 +180,13 @@ namespace Locker
                             offset += count;
                             outStreamEncrypted.Write(data, 0, count);
                             bytesRead += blockSizeBytes;
-                           
+                            float tmp = (float)bytesRead / ((float)totalBlocks) * 100;
+                            int percentComplete = (int)tmp;
+                            if (percentComplete > highestPercentageReached)
+                            {
+                                highestPercentageReached = percentComplete;
+                                worker.ReportProgress(percentComplete);
+                            }
                         }
                         while (count > 0);
                         inFs.Close();
@@ -139,10 +196,10 @@ namespace Locker
                 }
                 outFs.Close();
             }
-
+            return "Completed";
         }
 
-        private void DecryptFile(FileInfo fInfo)
+        private string DecryptFile(FileInfo fInfo, BackgroundWorker worker, DoWorkEventArgs e)
         {
 
             string inFile = fInfo.Name;
@@ -214,11 +271,13 @@ namespace Locker
 
                     int count = 0;
                     int offset = 0;
+                    long totalBlocks = fInfo.Length;
+                    highestPercentageReached = 0;
 
                     // blockSizeBytes can be any arbitrary size.
                     int blockSizeBytes = rjndl.BlockSize / 8;
                     byte[] data = new byte[blockSizeBytes];
-
+                    int bytesRead = 0;
 
                     // By decrypting a chunk a time,
                     // you can save memory and
@@ -234,10 +293,17 @@ namespace Locker
                             count = inFs.Read(data, 0, blockSizeBytes);
                             offset += count;
                             outStreamDecrypted.Write(data, 0, count);
-
+                            bytesRead += blockSizeBytes;
+                            float tmp = (float)bytesRead / ((float)totalBlocks) * 100;
+                            int percentComplete = (int)tmp;
+                            if (percentComplete > highestPercentageReached)
+                            {
+                                highestPercentageReached = percentComplete;
+                                worker.ReportProgress(percentComplete);
+                            }
                         }
                         while (count > 0);
-
+                        
                         outStreamDecrypted.FlushFinalBlock();
                         outStreamDecrypted.Close();
                     }
@@ -245,14 +311,19 @@ namespace Locker
                 }
                 inFs.Close();
             }
+            return "Completed";
+        }
 
+        private void EnableButtons(Boolean status)
+        {
+            buttonEncryptFile.Enabled = status;
+            buttonDecryptFile.Enabled = status;
         }
 
         private void ButtonEncryptFile_Click_1(object sender, EventArgs e)
         {
             if (rsa == null)
             {
-                //MessageBox.Show("Key not set.");
                 UpdateStatus("Key not set.");
             }
             else
@@ -262,7 +333,9 @@ namespace Locker
                     if (SelectedFileLocation != null)
                     {
                         FileInfo fInfo = new FileInfo(SelectedFileLocation);
-                        EncryptFile(fInfo);
+                        EnableButtons(false);
+                        backgroundEncrypter.RunWorkerAsync(fInfo);
+                        //EncryptFile(fInfo);
                     }
                     else
                     {
@@ -273,7 +346,9 @@ namespace Locker
                             if (fName != null)
                             {
                                 FileInfo fInfo = new FileInfo(fName);
-                                EncryptFile(fInfo);
+                                EnableButtons(false);
+                                backgroundEncrypter.RunWorkerAsync(fInfo);
+                                //EncryptFile(fInfo);
                             }
                         }
                     }
@@ -288,7 +363,6 @@ namespace Locker
         {
             if (rsa == null)
             {
-                //MessageBox.Show("Key not set.");
                 UpdateStatus("Key not set.");
             }
             else
@@ -298,7 +372,9 @@ namespace Locker
                     if (SelectedFileLocation != null)
                     {
                         FileInfo fInfo = new FileInfo(SelectedFileLocation);
-                        DecryptFile(fInfo);
+                        EnableButtons(false);
+                        backgroundDecrypter.RunWorkerAsync(fInfo);
+                        //DecryptFile(fInfo);
                     }
                     else
                     {
@@ -309,7 +385,9 @@ namespace Locker
                             if (fName != null)
                             {
                                 FileInfo fInfo = new FileInfo(fName);
-                                DecryptFile(fInfo);
+                                EnableButtons(false);
+                                backgroundDecrypter.RunWorkerAsync(fInfo);
+                                //DecryptFile(fInfo);
                             }
                         }
                     }
@@ -319,21 +397,10 @@ namespace Locker
                     MessageBox.Show(ex.Message, "Error while encrypting", MessageBoxButtons.OK);
                 }
             }
-
         }
 
         private void addContextEnrty()
         {
-            //Folder Registry
-            //RegistryKey _key = Registry.ClassesRoot.OpenSubKey("Folder\\Shell", true);
-            //RegistryKey _key = Registry.ClassesRoot.OpenSubKey(@"Unknown\shell", true);
-            //RegistryKey newkey = _key.CreateSubKey(rightClickText);
-            //RegistryKey subNewkey = newkey.CreateSubKey("Command");
-            //subNewkey.SetValue("", Application.ExecutablePath+ " \"%L\"");
-            //subNewkey.Close();
-            //newkey.Close(); 
-            //_key.Close();
-
             RegistryKey _key = Registry.ClassesRoot.OpenSubKey(@"*\shell\", true);
             RegistryKey newkey = _key.CreateSubKey(rightClickText);
             RegistryKey subNewkey = newkey.CreateSubKey("command");
@@ -345,7 +412,6 @@ namespace Locker
 
         private void removeContextEntry()
         {
-            //RegistryKey _key = Registry.ClassesRoot.OpenSubKey("Folder\\Shell", true);
             RegistryKey _key = Registry.ClassesRoot.OpenSubKey(@"*\shell", true);
             _key.DeleteSubKeyTree(rightClickText);
             _key.Close();
@@ -353,10 +419,7 @@ namespace Locker
 
         private void UpdateStatus(String text)
         {
-            if (text != null)
-            {
-                this.statusStrip1.Items[0].Text = text;
-            }
+            statusStrip1.Items[0].Text = text != null ? text : "";
         }
         private void AboutApplicationToolStripMenuItem_Click(object sender, EventArgs e)
         {
