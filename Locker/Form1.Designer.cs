@@ -34,6 +34,7 @@
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.openFileDialog2 = new System.Windows.Forms.OpenFileDialog();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.richTextBox = new System.Windows.Forms.RichTextBox();
             this.fileSystemWatcher1 = new System.IO.FileSystemWatcher();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -47,7 +48,7 @@
             this.contributeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusStrip = new System.Windows.Forms.ToolStripStatusLabel();
-            this.label1 = new System.Windows.Forms.Label();
+            this.version = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher1)).BeginInit();
             this.menuStrip1.SuspendLayout();
@@ -84,14 +85,23 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.version);
             this.groupBox1.Controls.Add(this.buttonEncryptFile);
             this.groupBox1.Controls.Add(this.buttonDecryptFile);
-            this.groupBox1.Location = new System.Drawing.Point(12, 34);
+            this.groupBox1.Location = new System.Drawing.Point(12, 29);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(460, 98);
             this.groupBox1.TabIndex = 8;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Encrypt/Decrypt";
+            // 
+            // richTextBox
+            // 
+            this.richTextBox.Location = new System.Drawing.Point(12, 133);
+            this.richTextBox.Name = "richTextBox";
+            this.richTextBox.Size = new System.Drawing.Size(460, 49);
+            this.richTextBox.TabIndex = 15;
+            this.richTextBox.Text = "";
             // 
             // fileSystemWatcher1
             // 
@@ -107,7 +117,7 @@
             this.aboutToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(484, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(480, 24);
             this.menuStrip1.TabIndex = 11;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -163,7 +173,7 @@
             this.rightClickOptionMenuItem.Checked = true;
             this.rightClickOptionMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.rightClickOptionMenuItem.Name = "rightClickOptionMenuItem";
-            this.rightClickOptionMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.rightClickOptionMenuItem.Size = new System.Drawing.Size(171, 22);
             this.rightClickOptionMenuItem.Text = "Right Click Option";
             this.rightClickOptionMenuItem.Click += new System.EventHandler(this.RightClickOptionMenuItem_Click);
             // 
@@ -179,14 +189,14 @@
             // aboutApplicationToolStripMenuItem
             // 
             this.aboutApplicationToolStripMenuItem.Name = "aboutApplicationToolStripMenuItem";
-            this.aboutApplicationToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.aboutApplicationToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.aboutApplicationToolStripMenuItem.Text = "About Application";
             this.aboutApplicationToolStripMenuItem.Click += new System.EventHandler(this.AboutApplicationToolStripMenuItem_Click);
             // 
             // contributeToolStripMenuItem
             // 
             this.contributeToolStripMenuItem.Name = "contributeToolStripMenuItem";
-            this.contributeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.contributeToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.contributeToolStripMenuItem.Text = "Contribute";
             this.contributeToolStripMenuItem.Click += new System.EventHandler(this.ContributeToolStripMenuItem_Click);
             // 
@@ -194,9 +204,9 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statusStrip});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 164);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 185);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(484, 22);
+            this.statusStrip1.Size = new System.Drawing.Size(480, 22);
             this.statusStrip1.TabIndex = 12;
             this.statusStrip1.Text = "statusStrip1";
             // 
@@ -205,34 +215,35 @@
             this.statusStrip.Name = "statusStrip";
             this.statusStrip.Size = new System.Drawing.Size(0, 17);
             // 
-            // label1
+            // version
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(9, 135);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(35, 13);
-            this.label1.TabIndex = 13;
-            this.label1.Text = "label1";
+            this.version.AutoSize = true;
+            this.version.Location = new System.Drawing.Point(419, 82);
+            this.version.Name = "version";
+            this.version.Size = new System.Drawing.Size(0, 13);
+            this.version.TabIndex = 16;
             // 
             // LockerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(484, 186);
-            this.Controls.Add(this.label1);
+            this.ClientSize = new System.Drawing.Size(480, 207);
+            this.Controls.Add(this.richTextBox);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.menuStrip1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.MaximizeBox = false;
-            this.MaximumSize = new System.Drawing.Size(500, 225);
+            this.MaximumSize = new System.Drawing.Size(500, 250);
             this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(500, 225);
+            this.MinimumSize = new System.Drawing.Size(500, 250);
             this.Name = "LockerForm";
             this.Text = "Locker";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher1)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
@@ -263,7 +274,8 @@
         private System.Windows.Forms.ToolStripMenuItem generateNewKeysToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loadKeyToolStripMenuItem;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.RichTextBox richTextBox;
+        private System.Windows.Forms.Label version;
     }
 }
 

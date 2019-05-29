@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Security.Cryptography;
 using System.IO;
 using Microsoft.Win32;
 using System.Security.Principal;
+using System.Threading;
+
+using System.Deployment.Application;
+using System.Reflection;
+
 
 namespace Locker
 {
@@ -21,22 +19,13 @@ namespace Locker
         CspParameters cspp = new CspParameters();
         RSACryptoServiceProvider rsa;
 
-        // Path variables for source, encryption, and
-        // decryption folders. Must end with a backslash.
-        const string EncrFolder = @"c:\Encrypt\";
-        const string DecrFolder = @"c:\Decrypt\";
-        const string SrcFolder = @"c:\docs\";
-
-        // Public key file
-        const string PubKeyFile = @"c:\encrypt\rsaPublicKey.txt";
-        const string FullKeyFile = @"c:\encrypt\rsaFullKey.txt";
-
         // Key container name for
         // private/public key value pair.
         const string keyName = "LockerKey";
 
         private Boolean rightClickState = false;
         private string rightClickText = "Encrypt/Decrypt Folder";
+        private string SelectedFileLocation = null;
 
         public LockerForm()
         {
@@ -46,9 +35,24 @@ namespace Locker
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            RegistryKey _key = Registry.ClassesRoot.OpenSubKey($"Folder\\Shell\\{rightClickText}", false);
+            version.Text = CurrentVersion;
+            RegistryKey _key = Registry.ClassesRoot.OpenSubKey($@"Unknown\shell\{rightClickText}", false);
             rightClickState = _key == null ? false : true;
             rightClickOptionMenuItem.Checked = rightClickState;
+            string[] args = Environment.GetCommandLineArgs();
+            try
+            {
+                if(File.Exists(args[1]))
+                {
+                    SelectedFileLocation = args[1];
+                    richTextBox.Text = "Selected File " + SelectedFileLocation;
+                }
+                
+                
+                
+            }
+            catch(Exception)
+            {}
         }
 
         private void EncryptFile(FileInfo fInfo)
@@ -87,8 +91,9 @@ namespace Locker
             // - the encrypted cipher content
 
             int startFileName = inFile.LastIndexOf("\\") + 1;
-            // Change the file's extension to ".enc"
-            string outFile = EncrFolder + inFile.Substring(startFileName, inFile.LastIndexOf(".") - startFileName) +fInfo.Extension;
+            // Change the file's extension to "_enc"
+
+            string outFile = fInfo.Directory.FullName +"\\" +inFile.Substring(startFileName, inFile.LastIndexOf(".") - startFileName) +fInfo.Extension+"_enc";
 
             using (FileStream outFs = new FileStream(outFile, FileMode.Create))
             {
@@ -109,19 +114,22 @@ namespace Locker
                     int count = 0;
                     int offset = 0;
 
+
                     // blockSizeBytes can be any arbitrary size.
                     int blockSizeBytes = rjndl.BlockSize / 8;
                     byte[] data = new byte[blockSizeBytes];
                     int bytesRead = 0;
 
                     using (FileStream inFs = new FileStream(inFile, FileMode.Open))
-                    {
+                    {                        
+                        //UpdateStatus(progressBar.Maximum.ToString());
                         do
                         {
                             count = inFs.Read(data, 0, blockSizeBytes);
                             offset += count;
                             outStreamEncrypted.Write(data, 0, count);
                             bytesRead += blockSizeBytes;
+                           
                         }
                         while (count > 0);
                         inFs.Close();
@@ -153,11 +161,11 @@ namespace Locker
             byte[] LenIV = new byte[4];
 
             // Consruct the file name for the decrypted file.
-            string outFile = DecrFolder + inFile.Substring(0, inFile.LastIndexOf(".")) + fInfo.Extension;
+            string outFile = fInfo.Directory.FullName +"\\"+ inFile.Substring(0, inFile.LastIndexOf(".")) + fInfo.Extension.Replace("_enc", "");
 
             // Use FileStream objects to read the encrypted
             // file (inFs) and save the decrypted file (outFs).
-            using (FileStream inFs = new FileStream(EncrFolder + inFile, FileMode.Open))
+            using (FileStream inFs = new FileStream(fInfo.Directory.FullName +"\\"+ inFile, FileMode.Open))
             {
 
                 inFs.Seek(0, SeekOrigin.Begin);
@@ -189,7 +197,7 @@ namespace Locker
                 inFs.Read(KeyEncrypted, 0, lenK);
                 inFs.Seek(8 + lenK, SeekOrigin.Begin);
                 inFs.Read(IV, 0, lenIV);
-                Directory.CreateDirectory(DecrFolder);
+                //Directory.CreateDirectory(DecrFolder);
                 // Use RSACryptoServiceProvider
                 // to decrypt the Rijndael key.
                 byte[] KeyDecrypted = rsa.Decrypt(KeyEncrypted, false);
@@ -243,22 +251,35 @@ namespace Locker
         private void ButtonEncryptFile_Click_1(object sender, EventArgs e)
         {
             if (rsa == null)
-                MessageBox.Show("Key not set.");
+            {
+                //MessageBox.Show("Key not set.");
+                UpdateStatus("Key not set.");
+            }
             else
             {
-
-                // Display a dialog box to select a file to encrypt.
-                openFileDialog1.InitialDirectory = SrcFolder;
-                if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                try
                 {
-                    string fName = openFileDialog1.FileName;
-                    if (fName != null)
+                    if (SelectedFileLocation != null)
                     {
-                        FileInfo fInfo = new FileInfo(fName);
-                        // Pass the file name without the path.
-                       
+                        FileInfo fInfo = new FileInfo(SelectedFileLocation);
                         EncryptFile(fInfo);
                     }
+                    else
+                    {
+                        if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                        {
+                            string fName = openFileDialog1.FileName;
+                            richTextBox.Text = "Selected File : " + fName;
+                            if (fName != null)
+                            {
+                                FileInfo fInfo = new FileInfo(fName);
+                                EncryptFile(fInfo);
+                            }
+                        }
+                    }
+                }catch(Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Error while encrypting", MessageBoxButtons.OK);
                 }
             }
         }
@@ -266,20 +287,36 @@ namespace Locker
         private void ButtonDecryptFile_Click_1(object sender, EventArgs e)
         {
             if (rsa == null)
-                MessageBox.Show("Key not set.");
+            {
+                //MessageBox.Show("Key not set.");
+                UpdateStatus("Key not set.");
+            }
             else
             {
-                // Display a dialog box to select the encrypted file.
-                openFileDialog2.InitialDirectory = EncrFolder;
-                if (openFileDialog2.ShowDialog() == DialogResult.OK)
+                try
                 {
-                    string fName = openFileDialog2.FileName;
-                    if (fName != null)
+                    if (SelectedFileLocation != null)
                     {
-                        FileInfo fi = new FileInfo(fName);
-                        
-                        DecryptFile(fi);
+                        FileInfo fInfo = new FileInfo(SelectedFileLocation);
+                        DecryptFile(fInfo);
                     }
+                    else
+                    {
+                        if (openFileDialog2.ShowDialog() == DialogResult.OK)
+                        {
+                            string fName = openFileDialog2.FileName;
+                            richTextBox.Text = "Selected File : " + fName;
+                            if (fName != null)
+                            {
+                                FileInfo fInfo = new FileInfo(fName);
+                                DecryptFile(fInfo);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Error while encrypting", MessageBoxButtons.OK);
                 }
             }
 
@@ -287,20 +324,30 @@ namespace Locker
 
         private void addContextEnrty()
         {
-            RegistryKey _key = Registry.ClassesRoot.OpenSubKey("Folder\\Shell", true);
+            //Folder Registry
+            //RegistryKey _key = Registry.ClassesRoot.OpenSubKey("Folder\\Shell", true);
+            //RegistryKey _key = Registry.ClassesRoot.OpenSubKey(@"Unknown\shell", true);
+            //RegistryKey newkey = _key.CreateSubKey(rightClickText);
+            //RegistryKey subNewkey = newkey.CreateSubKey("Command");
+            //subNewkey.SetValue("", Application.ExecutablePath+ " \"%L\"");
+            //subNewkey.Close();
+            //newkey.Close(); 
+            //_key.Close();
+
+            RegistryKey _key = Registry.ClassesRoot.OpenSubKey(@"*\shell\", true);
             RegistryKey newkey = _key.CreateSubKey(rightClickText);
-            RegistryKey subNewkey = newkey.CreateSubKey("Command");
-            subNewkey.SetValue("", Application.ExecutablePath);
+            RegistryKey subNewkey = newkey.CreateSubKey("command");
+            subNewkey.SetValue("", Application.ExecutablePath + " \"%L\"");
             subNewkey.Close();
-            newkey.Close(); 
+            newkey.Close();
             _key.Close();
         }
 
         private void removeContextEntry()
         {
-            RegistryKey _key = Registry.ClassesRoot.OpenSubKey("Folder\\Shell", true);
-            _key.DeleteSubKey($"{rightClickText}\\Command");
-            _key.DeleteSubKey(rightClickText);
+            //RegistryKey _key = Registry.ClassesRoot.OpenSubKey("Folder\\Shell", true);
+            RegistryKey _key = Registry.ClassesRoot.OpenSubKey(@"*\shell", true);
+            _key.DeleteSubKeyTree(rightClickText);
             _key.Close();
         }
 
@@ -348,7 +395,7 @@ namespace Locker
             }
             else
             {
-                MessageBox.Show("You have to run the Locker as Administrator to enable this functionality", "Need Admin Access", MessageBoxButtons.OK);
+                MessageBox.Show("You have to run the Locker as Administrator to enable/disable Right Click Menu Entry", "Need Admin Access", MessageBoxButtons.OK);
             }
         }
 
@@ -410,14 +457,27 @@ namespace Locker
                 {
                     MessageBox.Show($"Error message: {ex.Message}\n\n" +
                     $"Details:\n\n{ex.StackTrace}", "Error", MessageBoxButtons.OK);
+                    statusStrip.Text = "Unable to load the selected file";
                 }
             }
             else
             {
-                statusStrip.Text = "Unable to load the selected file";
+                statusStrip.Text = "No content in the file";
             }
 
         }
+        public string CurrentVersion
+        {
+            get
+            {
+                return ApplicationDeployment.IsNetworkDeployed
+                       ? ApplicationDeployment.CurrentDeployment.CurrentVersion.ToString()
+                       : Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            }
+        }
 
     }
+
+
+
 }
