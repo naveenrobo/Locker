@@ -4,7 +4,9 @@ using System.Security.Cryptography;
 using System.IO;
 using Microsoft.Win32;
 using System.Security.Principal;
+
 using System.Threading;
+using System.ComponentModel;
 
 using System.Deployment.Application;
 using System.Reflection;
@@ -27,10 +29,59 @@ namespace Locker
         private string rightClickText = "Encrypt/Decrypt Folder";
         private string SelectedFileLocation = null;
 
+        // Threading
+        // Using docs from Microsoft for the Implementation.
+        // https://docs.microsoft.com/en-us/dotnet/framework/winforms/controls/backgroundworker-component-overview
+        private BackgroundWorker backgroundWorker1;
+
         public LockerForm()
         {
             InitializeComponent();
-           
+
+            //Initiate Background Worker for threading
+            InitializeBackgroundWorker();
+
+        }
+
+        private void InitializeBackgroundWorker()
+        {
+            backgroundWorker1.DoWork += new DoWorkEventHandler(backgroundWorker1_DoWork);
+            backgroundWorker1.RunWorkerCompleted += new RunWorkerCompletedEventHandler(backgroundWorker1_RunWorkerCompleted);
+            backgroundWorker1.ProgressChanged += new ProgressChangedEventHandler(backgroundWorker1_ProgressChanged);
+        }
+
+        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        {
+            BackgroundWorker worker = sender as BackgroundWorker;
+
+            // This is will be available to the 
+            // RunWorkerCompleted eventhandler.
+            e.Result = EncryptFile((FileInfo)e.Argument, worker, e);
+        }
+
+        // This event handler deals with the results of the
+        // background operation.
+        private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            // First, handle the case where an exception was thrown.
+            if (e.Error != null)
+            {
+                richTextBox.AppendText(e.Error.Message);
+            }
+            else if (e.Cancelled)
+            {
+                richTextBox.AppendText("Canceled");
+            }
+            else
+            {
+                richTextBox.AppendText(e.Result.ToString());
+            }
+        }
+
+        // This event handler updates the progress bar.
+        private void backgroundWorker1_ProgressChanged(object sender,ProgressChangedEventArgs e)
+        {
+            this.progressBar1.Value = e.ProgressPercentage;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -55,9 +106,10 @@ namespace Locker
             {}
         }
 
-        private void EncryptFile(FileInfo fInfo)
+        private Boolean EncryptFile(FileInfo fInfo, BackgroundWorker worker, DoWorkEventArgs e)
         {
             string inFile = fInfo.FullName;
+            Boolean status = false;
             // Create instance of Rijndael for
             // symetric encryption of the data.
             RijndaelManaged rjndl = new RijndaelManaged();
@@ -114,6 +166,8 @@ namespace Locker
                     int count = 0;
                     int offset = 0;
 
+                    // Progress bar
+                    long totalBlocks = fInfo.Length;
 
                     // blockSizeBytes can be any arbitrary size.
                     int blockSizeBytes = rjndl.BlockSize / 8;
@@ -121,24 +175,37 @@ namespace Locker
                     int bytesRead = 0;
 
                     using (FileStream inFs = new FileStream(inFile, FileMode.Open))
-                    {                        
-                        //UpdateStatus(progressBar.Maximum.ToString());
-                        do
+                    {
+                        if (worker.CancellationPending)
                         {
-                            count = inFs.Read(data, 0, blockSizeBytes);
-                            offset += count;
-                            outStreamEncrypted.Write(data, 0, count);
-                            bytesRead += blockSizeBytes;
-                           
+                            e.Cancel = true;
                         }
-                        while (count > 0);
-                        inFs.Close();
+                        else
+                        {
+                            do
+                            {
+                                count = inFs.Read(data, 0, blockSizeBytes);
+                                offset += count;
+                                outStreamEncrypted.Write(data, 0, count);
+                                bytesRead += blockSizeBytes;
+                                float tmp = (float)bytesRead/ ((float)totalBlocks)*100;
+                                int percent = (int)tmp ;
+                                //MessageBox.Show(percent.ToString());
+                                backgroundWorker1.ReportProgress((int)percent);
+
+                            }
+                            while (count > 0);
+                            inFs.Close();
+                            status = true;
+                        }
+                      
                     }
                     outStreamEncrypted.FlushFinalBlock();
                     outStreamEncrypted.Close();
                 }
                 outFs.Close();
             }
+            return status;
 
         }
 
@@ -262,7 +329,8 @@ namespace Locker
                     if (SelectedFileLocation != null)
                     {
                         FileInfo fInfo = new FileInfo(SelectedFileLocation);
-                        EncryptFile(fInfo);
+                        backgroundWorker1.RunWorkerAsync(fInfo);
+                        //EncryptFile(fInfo);
                     }
                     else
                     {
@@ -273,7 +341,8 @@ namespace Locker
                             if (fName != null)
                             {
                                 FileInfo fInfo = new FileInfo(fName);
-                                EncryptFile(fInfo);
+                                backgroundWorker1.RunWorkerAsync(fInfo);
+                                //EncryptFile(fInfo);
                             }
                         }
                     }
@@ -466,6 +535,7 @@ namespace Locker
             }
 
         }
+
         public string CurrentVersion
         {
             get

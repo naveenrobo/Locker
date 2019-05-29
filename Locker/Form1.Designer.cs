@@ -34,6 +34,7 @@
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.openFileDialog2 = new System.Windows.Forms.OpenFileDialog();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.version = new System.Windows.Forms.Label();
             this.richTextBox = new System.Windows.Forms.RichTextBox();
             this.fileSystemWatcher1 = new System.IO.FileSystemWatcher();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
@@ -48,12 +49,15 @@
             this.contributeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusStrip = new System.Windows.Forms.ToolStripStatusLabel();
-            this.version = new System.Windows.Forms.Label();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
+
+
             // 
             // buttonEncryptFile
             // 
@@ -85,6 +89,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.progressBar1);
             this.groupBox1.Controls.Add(this.version);
             this.groupBox1.Controls.Add(this.buttonEncryptFile);
             this.groupBox1.Controls.Add(this.buttonDecryptFile);
@@ -94,6 +99,14 @@
             this.groupBox1.TabIndex = 8;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Encrypt/Decrypt";
+            // 
+            // version
+            // 
+            this.version.AutoSize = true;
+            this.version.Location = new System.Drawing.Point(419, 82);
+            this.version.Name = "version";
+            this.version.Size = new System.Drawing.Size(0, 13);
+            this.version.TabIndex = 16;
             // 
             // richTextBox
             // 
@@ -214,14 +227,18 @@
             // 
             this.statusStrip.Name = "statusStrip";
             this.statusStrip.Size = new System.Drawing.Size(0, 17);
+            //
+            // backgroundWorker1
+            //
+            this.backgroundWorker1.WorkerReportsProgress = true;
+            this.backgroundWorker1.WorkerSupportsCancellation = true;
             // 
-            // version
+            // progressBar1
             // 
-            this.version.AutoSize = true;
-            this.version.Location = new System.Drawing.Point(419, 82);
-            this.version.Name = "version";
-            this.version.Size = new System.Drawing.Size(0, 13);
-            this.version.TabIndex = 16;
+            this.progressBar1.Location = new System.Drawing.Point(0, 86);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(460, 10);
+            this.progressBar1.TabIndex = 16;
             // 
             // LockerForm
             // 
@@ -276,6 +293,7 @@
         private System.Windows.Forms.ToolStripMenuItem loadKeyToolStripMenuItem;
         private System.Windows.Forms.RichTextBox richTextBox;
         private System.Windows.Forms.Label version;
+        private System.Windows.Forms.ProgressBar progressBar1;
     }
 }
 
